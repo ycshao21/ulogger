@@ -1,0 +1,47 @@
+version: 1
+disable_existing_loggers: False
+filters:
+    non_error:
+        (): mylogger.NonErrorFilter
+formatters:
+    standard:
+        format: "[%(levelname)s | %(module)s | L%(lineno)d] %(asctime)s: %(message)s"
+        datefmt: "%Y-%m-%dT%H:%M:%S%z"
+    json:
+        (): mylogger.JSONFormatter
+        fmt_keys:
+            level: levelname
+            message: message
+            timestamp: timestamp
+            logger: name
+            module: module
+            function: funcName
+            line: lineno
+            thread_name: threadName
+handlers:
+    stdout:
+        class: logging.StreamHandler
+        filters:
+            - non_error
+        formatter: standard
+        stream: ext://sys.stdout
+    stderr:
+        class: logging.StreamHandler
+        level: WARNING
+        formatter: standard
+        stream: ext://sys.stderr
+    file:
+        class: logging.handlers.RotatingFileHandler
+        level: DEBUG
+        formatter: json
+        filename: logs\app.log.jsonl  # You can change the log filename here
+        maxBytes: 10000  # 10KB
+        backupCount: 3
+        encoding: utf8
+loggers:
+    root:  # logger name
+        level: DEBUG
+        handlers:
+            - stdout
+            - stderr
+            - file
