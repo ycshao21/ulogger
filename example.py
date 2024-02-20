@@ -1,11 +1,11 @@
-import logging
-
 import mylogger
 mylogger.setup()
 
+import logging
+logger = logging.getLogger("root")
+
 
 def test():
-    logger = logging.getLogger("root")
     logger.debug("This is a debug message.", extra={'extra_info': 'Hello!'})
     logger.info("This is an info message.")
     logger.warning("This is a warning message.")
@@ -13,7 +13,7 @@ def test():
     logger.critical("This is a critical message.")
     try:
         1 / 0
-    except Exception as e:
+    except Exception:
         logger.exception("An exception was thrown!")
 
 

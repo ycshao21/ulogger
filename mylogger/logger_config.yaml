@@ -34,14 +34,19 @@ handlers:
         class: logging.handlers.RotatingFileHandler
         level: DEBUG
         formatter: json
-        filename: logs\app.log.jsonl  # You can change the log filename here
-        maxBytes: 10000  # 10KB
-        backupCount: 3
+        filename: logs\log_history.jsonl
+        maxBytes: 5242880  # If file size exceeds 5MB, it will be rotated
+        backupCount: 20  # Keep 20 log files
         encoding: utf8
-loggers:
-    root:  # logger name
-        level: DEBUG
+    queue_handler:
+        class: logging.handlers.QueueHandler
         handlers:
-            - stdout
+            # - stdout
             - stderr
             - file
+        respect_handler_level: True
+loggers:
+    root:
+        level: DEBUG
+        handlers:
+            - queue_handler

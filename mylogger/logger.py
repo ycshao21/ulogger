@@ -1,14 +1,19 @@
-import os
+import pathlib
 import datetime as dt
+from typing import override
 
 from ruamel.yaml import YAML
 import json
 
 import logging
 import logging.config
+import logging.handlers
+
+import atexit
 
 
 class NonErrorFilter(logging.Filter):
+    @override
     def filter(
         self,
         record: logging.LogRecord
@@ -72,6 +77,7 @@ class JSONFormatter(logging.Formatter):
         super().__init__()
         self.fmt_keys = fmt_keys if fmt_keys else {}
     
+    @override
     def format(
         self,
         record: logging.LogRecord
@@ -137,30 +143,28 @@ class JSONFormatter(logging.Formatter):
         
         return log_dict
 
-    
+
 def setup():
     """
     Set up the loggers.
     Directory "logs" will be created in the current working directory if it does not exist.
-    Call this function where the loggers are to be used.
-
-    Raises
-    ------
-    FileNotFoundError
-        If the logger configuration file is not found.
+    [NOTE] Call this function before using the logger.
     """
-    config_path = 'logger_config.yaml'
-    config_path = os.path.join(os.path.dirname(__file__), config_path)
-
-    if os.path.exists(config_path):
-        config = YAML().load(open(config_path))
-    else:
+    config_path = pathlib.Path(__file__).resolve().parent / 'logger_config.yaml'
+    try:
+        config = YAML().load(config_path)
+    except FileNotFoundError:
         raise FileNotFoundError(f"Config file not found at \"{config_path}\".")
     
-    # Log files are stored in "logs" directory
-    log_dir = 'logs'
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-
-    # Set up the logger
-    logging.config.dictConfig(config)
+    # Logging files are stored in "logs" directory
+    try:
+        logging.config.dictConfig(config)
+    except Exception:
+        # If the log directory does not exist, create it and try again
+        log_dir = 'logs'
+        pathlib.Path(log_dir).mkdir(exist_ok=True)
+        logging.config.dictConfig(config)
+    
+    if (queue_handler := logging.getHandlerByName('queue_handler')):
+        queue_handler.listener.start()
+        atexit.register(queue_handler.listener.stop)
