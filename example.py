@@ -1,12 +1,12 @@
-import mylogger
-mylogger.setup()
+import utils.ulogger as ulogger
+ulogger.setup("test")
 
 import logging
-logger = logging.getLogger("root")
+logger = logging.getLogger("test")
 
 
-def test():
-    logger.debug("This is a debug message.", extra={'extra_info': 'Hello!'})
+def test_logger():
+    logger.debug("This is a debug message.", extra={'acc': 0.95})
     logger.info("This is an info message.")
     logger.warning("This is a warning message.")
     logger.error("This is an error message.")
@@ -18,4 +18,4 @@ def test():
 
 
 if __name__ == '__main__':
-    test()
+    test_logger()

@@ -2,13 +2,13 @@ version: 1
 disable_existing_loggers: False
 filters:
     non_error:
-        (): mylogger.NonErrorFilter
+        (): utils.ulogger.NonErrorFilter
 formatters:
     standard:
         format: "[%(levelname)s | %(module)s | L%(lineno)d] %(asctime)s: %(message)s"
         datefmt: "%Y-%m-%dT%H:%M:%S%z"
     json:
-        (): mylogger.JSONFormatter
+        (): utils.ulogger.JSONFormatter
         fmt_keys:
             level: levelname
             message: message
@@ -34,14 +34,12 @@ handlers:
         class: logging.handlers.RotatingFileHandler
         level: DEBUG
         formatter: json
-        filename: logs\log_history.jsonl
-        maxBytes: 5242880  # If file size exceeds 5MB, it will be rotated
-        backupCount: 20  # Keep 20 log files
+        maxBytes: 2097152  # If file size exceeds 2MB, it will be rotated
         encoding: utf8
-    queue_handler:
+    queue_handler:  # Send logs to a queue without blocking the main thread
         class: logging.handlers.QueueHandler
         handlers:
-            # - stdout
+            - stdout
             - stderr
             - file
         respect_handler_level: True

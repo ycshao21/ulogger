@@ -1,17 +1,20 @@
-# mylogger
+# ulogger
 ## Requirements
 ```
 python >= 3.12
 ruamel.yaml
 ```
 
-## How to use it?
-Place the `mylogger` folder in your working directory, and add code like this before you use the logger.
+## How to use it
+Add the following lines to the python scripts where you want to log messages:
 ```py
 import mylogger
-mylogger.setup()
-```
-Then you can import logging and get loggers.
+mylogger.setup(name="<name_of_logging_folder>")
 
-All the logging history will be saved in the `logs` folder as jsonl files, so you can use json parser to get detailed information.
-You can keep 20 files at most, each of which does not exceed 5MB. And the oldest file will be deleted if more information is to be appended. You can customize by modifying `mylogger/logger_config.yaml`.
+import logging 
+logger = logging.getLogger("<logger_name>")
+```
+
+All the logging history will be saved as `.jsonl` files in the `logs` directory. You can specify the name of each logging subfolder, as shown in the code above. If not, it defaults to the current timestamp. For details, check out `example.py`
+
+Each log file will rotate once it exceeds 2MB. You can customize the logger by modifying `configs/ulogger.yaml`.
