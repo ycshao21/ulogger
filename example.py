@@ -1,5 +1,5 @@
-import utils.ulogger as ulogger
-ulogger.setup("test")
+import ulogger
+ulogger.setupLoggers()
 
 import logging
 logger = logging.getLogger("test")

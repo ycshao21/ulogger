@@ -1,14 +1,29 @@
 version: 1
+
 disable_existing_loggers: False
+
+loggers:
+    root:
+        level: DEBUG
+        handlers:
+            - queue_handler
+    test:
+        level: DEBUG
+        handlers:
+            - stdout
+            - stderr
+            - stdfile
+
 filters:
     non_error:
-        (): utils.ulogger.NonErrorFilter
+        (): ulogger.NonErrorFilter
+
 formatters:
-    standard:
-        format: "[%(levelname)s | %(module)s | L%(lineno)d] %(asctime)s: %(message)s"
+    stdfmtter:
+        format: "[%(asctime)s][%(levelname)s][%(module)s:L%(lineno)d] : %(message)s"
         datefmt: "%Y-%m-%dT%H:%M:%S%z"
-    json:
-        (): utils.ulogger.JSONFormatter
+    jsonfmtter:
+        (): ulogger.JSONFormatter
         fmt_keys:
             level: levelname
             message: message
@@ -18,33 +33,31 @@ formatters:
             function: funcName
             line: lineno
             thread_name: threadName
+
 handlers:
     stdout:
         class: logging.StreamHandler
         filters:
             - non_error
-        formatter: standard
+        formatter: stdfmtter
         stream: ext://sys.stdout
     stderr:
         class: logging.StreamHandler
         level: WARNING
-        formatter: standard
+        formatter: stdfmtter
         stream: ext://sys.stderr
-    file:
-        class: logging.handlers.RotatingFileHandler
+    stdfile:
+        class: concurrent_log_handler.ConcurrentRotatingFileHandler 
+        filename: ./logs/logs.jsonl
+        mode: a
         level: DEBUG
-        formatter: json
-        maxBytes: 2097152  # If file size exceeds 2MB, it will be rotated
+        formatter: jsonfmtter
+        maxBytes: 2097152
         encoding: utf8
     queue_handler:  # Send logs to a queue without blocking the main thread
         class: logging.handlers.QueueHandler
         handlers:
             - stdout
             - stderr
-            - file
+            - stdfile
         respect_handler_level: True
-loggers:
-    root:
-        level: DEBUG
-        handlers:
-            - queue_handler

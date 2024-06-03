@@ -10,7 +10,11 @@ import logging.config
 import logging.handlers
 
 import atexit
+atexit
 
+from ruamel.yaml import YAML
+import os
+import os.path as osp
 
 class NonErrorFilter(logging.Filter):
     @override
@@ -56,7 +60,6 @@ LOG_RECORD_BUILTIN_ATTRS = {
     "threadName",
     "taskName",
 }
-
 
 class JSONFormatter(logging.Formatter):
     def __init__(
@@ -140,25 +143,11 @@ class JSONFormatter(logging.Formatter):
         return log_dict
 
 
-def setup(name=None):
-    """Set up the loggers.
-    Directory "logs" will be created in the current working directory if it does not exist.
-    [NOTE] Call this function before using the logger.
-
-    Parameters
-    ----------
-    name : str, optional
-        The log name to use, by default None.
-
-    Raises
-    ------
-    FileNotFoundError
-        If the config file is not found.
-    """
+def setupLoggers():
 
     # Load the logger configuration
     # Go back one directory to find the config file
-    config_path = Path(__file__).parent.parent / "configs" / "ulogger.yaml"
+    config_path = osp.join("configs", "ulogger.yaml")
     print(config_path)
     try:
         with open(config_path, "r") as f:
@@ -166,19 +155,10 @@ def setup(name=None):
     except FileNotFoundError:
         raise FileNotFoundError(f'Config file not found at "{config_path}".')
 
-
-    # Create the log directory
-    log_dir = "logs"
-    Path(log_dir).mkdir(exist_ok=True)
-
-    # Make a directory for the log history
-    if name is None:
-        name = dt.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-    log_dir = Path("logs") / name
-    log_dir.mkdir(exist_ok=True)
-    config["handlers"]["file"]["filename"] = log_dir / "log_history.jsonl"
-    
+    # Create the log directory if it doesn't exist
+    for handler in config["handlers"].values():
+        if handler.get("filename"):
+            os.makedirs(osp.dirname(handler["filename"]), exist_ok=True)
 
     # Configure the logger
     logging.config.dictConfig(config)
